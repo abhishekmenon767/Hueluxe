@@ -1,0 +1,283 @@
+/* ==========================================================================
+   HUELUXE Design System & Global Stylesheet
+   ========================================================================== */
+
+:root {
+  /* Colors */
+  --bg-dark: #05070B;
+  --bg-card: #0C101A;
+  --bg-card-hover: #131A29;
+  
+  --primary: #0A1931;
+  --secondary: #153B2D;
+  
+  --gold: #D4AF37;
+  --gold-hover: #F3E5AB;
+  --gold-glow: rgba(212, 175, 55, 0.15);
+  
+  --white: #FFFFFF;
+  --gray-light: #F8F9FA;
+  --gray-med: #8E98A8;
+  --gray-dark: #1E2530;
+  
+  --border-light: rgba(255, 255, 255, 0.05);
+  --border-gold: rgba(212, 175, 55, 0.2);
+
+  /* Fonts */
+  --font-serif: var(--font-serif), 'Cormorant Garamond', Georgia, serif;
+  --font-sans: var(--font-sans), 'Outfit', system-ui, -apple-system, sans-serif;
+
+  /* Spacing */
+  --nav-height: 80px;
+
+  /* Transitions */
+  --transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-dark);
+  color: var(--white);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  overflow-x: hidden;
+  line-height: 1.6;
+  background-color: var(--bg-dark);
+  color: var(--white);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Premium Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-dark);
+  border-radius: 4px;
+  border: 2px solid var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* --- Global Utilities & Typography --- */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-tag {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 3.2rem;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+/* Custom Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 36px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-primary {
+  background-color: var(--white);
+  color: var(--bg-dark);
+  border: 1px solid var(--white);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-dark);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-primary:hover {
+  color: var(--white);
+}
+
+.btn-primary:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-secondary:hover {
+  border-color: var(--white);
+}
+
+.btn-secondary:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.btn-gold {
+  background-color: transparent;
+  color: var(--gold);
+  border: 1px solid var(--border-gold);
+}
+
+.btn-gold::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: -1;
+}
+
+.btn-gold:hover {
+  color: var(--bg-dark);
+  border-color: var(--gold);
+}
+
+.btn-gold:hover::before {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(12, 16, 26, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-panel-hover {
+  transition: var(--transition-smooth);
+}
+
+.glass-panel-hover:hover {
+  border-color: var(--border-gold);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(212, 175, 55, 0.05);
+  transform: translateY(-4px);
+}
+
+/* Toast Animation */
+@keyframes slideIn {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
