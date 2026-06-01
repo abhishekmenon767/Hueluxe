@@ -1,260 +1,224 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useMemo } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Environment } from "@react-three/drei";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import * as THREE from "three";
 import { motion } from "framer-motion";
 
-export default function Hero() {
-  const containerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.15,
-      },
-    },
-  };
+function Particles() {
+  const ref = useRef();
+  const count = 15000;
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.16, 1, 0.3, 1],
-      },
-    },
-  };
+  const [positions, colors] = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const color = new THREE.Color();
+    
+    for (let i = 0; i < count; i++) {
+      // Shrunk the radius and moved the center closer to the camera to bring stars nearby
+      const r = 40 * Math.cbrt(Math.random());
+      const theta = Math.random() * 2 * Math.PI;
+      const phi = Math.acos(2 * Math.random() - 1);
+      
+      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi) - 5;
+
+      // Realistic star colors
+      const randCol = Math.random();
+      if (randCol > 0.95) color.set("#d4af37");
+      else if (randCol > 0.8) color.set("#ffffff");
+      else if (randCol > 0.6) color.set("#99bbff");
+      else color.set("#666666");
+
+      col[i * 3] = color.r;
+      col[i * 3 + 1] = color.g;
+      col[i * 3 + 2] = color.b;
+    }
+    return [pos, col];
+  }, [count]);
+
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.rotation.x -= delta * 0.01;
+      ref.current.rotation.y -= delta * 0.02;
+    }
+  });
 
   return (
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.05}
+        vertexColors
+        transparent
+        opacity={0.8}
+        sizeAttenuation
+        depthWrite={false}
+      />
+    </points>
+  );
+}
+
+function WavyPlane() {
+  const meshRef = useRef();
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      const time = state.clock.getElapsedTime() * 0.5;
+      const positionAttribute = meshRef.current.geometry.attributes.position;
+      for (let i = 0; i < positionAttribute.count; i++) {
+        const x = positionAttribute.getX(i);
+        const y = positionAttribute.getY(i);
+        const z = Math.sin(x * 1.5 + time) * 0.3 + Math.cos(y * 1.5 + time) * 0.3;
+        positionAttribute.setZ(i, z);
+      }
+      positionAttribute.needsUpdate = true;
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} rotation={[-Math.PI / 2.2, 0, 0]} position={[0, -1.5, -2]}>
+      <planeGeometry args={[15, 15, 64, 64]} />
+      <meshStandardMaterial
+        color="#d4af37"
+        wireframe={true}
+        transparent={true}
+        opacity={0.15}
+      />
+    </mesh>
+  );
+}
+
+function Scene() {
+  const groupRef = useRef();
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(
+        groupRef.current.rotation.y,
+        (state.mouse.x * Math.PI) / 20,
+        0.05
+      );
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        (-state.mouse.y * Math.PI) / 20,
+        0.05
+      );
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Particles />
+      <WavyPlane />
+    </group>
+  );
+}
+
+export default function Hero() {
+  return (
     <section
-      id="hero"
       style={{
         position: "relative",
         width: "100%",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
+        height: "100vh",
+        backgroundColor: "#05070B",
         overflow: "hidden",
-        backgroundColor: "var(--bg-dark)",
-        paddingTop: "var(--nav-height)",
       }}
     >
-      {/* Background Parallax & Overlay */}
+      {/* Interactive 3D Background */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+        <Canvas camera={{ position: [0, 0, 3], fov: 60 }}>
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 5, 5]} intensity={1} color="#d4af37" />
+          <Environment preset="city" />
+          <Scene />
+          <EffectComposer>
+            <Bloom luminanceThreshold={0.2} luminanceSmoothing={0.9} intensity={1.5} />
+          </EffectComposer>
+        </Canvas>
+      </div>
+
+      {/* Content Overlay */}
       <div
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 1,
-        }}
-      >
-        <motion.img
-          initial={{ scale: 1.08 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-          src="/images/hero_banner.png"
-          alt="HUELUXE Gentleman"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center 20%",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "linear-gradient(90deg, rgba(5, 7, 11, 0.95) 0%, rgba(5, 7, 11, 0.75) 45%, rgba(5, 7, 11, 0.2) 100%)",
-          }}
-        />
-        {/* Subtle Bottom Vignette */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "150px",
-            background: "linear-gradient(to top, var(--bg-dark), transparent)",
-          }}
-        />
-      </div>
-
-      {/* Hero Content */}
-      <div
-        className="container"
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          justifyContent: "flex-start",
-          width: "100%",
-        }}
-      >
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          style={{
-            maxWidth: "640px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-          }}
-        >
-          <motion.span
-            variants={itemVariants}
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.8rem",
-              fontWeight: 600,
-              letterSpacing: "0.3em",
-              color: "var(--gold)",
-              textTransform: "uppercase",
-              marginBottom: "16px",
-            }}
-          >
-            ATELIER OF DISTINCTION
-          </motion.span>
-          
-          <motion.h1
-            variants={itemVariants}
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(3.5rem, 8vw, 5.5rem)",
-              fontWeight: 300,
-              lineHeight: 1.05,
-              letterSpacing: "-0.02em",
-              marginBottom: "12px",
-              color: "var(--white)",
-            }}
-          >
-            HUELUXE SOLID
-          </motion.h1>
-
-          <motion.p
-            variants={itemVariants}
-            style={{
-              fontFamily: "var(--font-serif)",
-              fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
-              fontWeight: 300,
-              fontStyle: "italic",
-              color: "var(--gold-hover)",
-              marginBottom: "24px",
-            }}
-          >
-            Premium Fit. Timeless Italian Style.
-          </motion.p>
-
-          <motion.p
-            variants={itemVariants}
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "1rem",
-              fontWeight: 300,
-              color: "var(--gray-med)",
-              lineHeight: 1.7,
-              marginBottom: "40px",
-              maxWidth: "500px",
-            }}
-          >
-            Crafted for the modern gentleman who commands respect and appreciates tailored elegance. Spun from long-staple cotton for unmatched comfort.
-          </motion.p>
-
-          <motion.div
-            variants={itemVariants}
-            style={{
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <a href="#color-showcase" className="btn btn-primary">
-              Preview Collection
-            </a>
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Animated Scroll Mouse */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.7 }}
-        transition={{ delay: 1.2, duration: 1 }}
-        style={{
-          position: "absolute",
-          bottom: "30px",
-          left: "50%",
-          transform: "translateX(-50%)",
+          inset: 0,
           zIndex: 2,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "8px",
-          cursor: "pointer",
-        }}
-        className="hidden-mobile"
-        onClick={() => {
-          document.getElementById("color-showcase")?.scrollIntoView({ behavior: "smooth" });
+          justifyContent: "center",
+          background: "radial-gradient(circle at center, transparent 0%, rgba(5,7,11,0.8) 100%)",
+          pointerEvents: "none",
         }}
       >
-        <div
-          style={{
-            width: "22px",
-            height: "36px",
-            border: "1px solid rgba(255, 255, 255, 0.4)",
-            borderRadius: "11px",
-            position: "relative",
-          }}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}
         >
-          <motion.div
-            animate={{
-              y: [0, 14, 0],
-              opacity: [1, 0.2, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+          <h2
             style={{
-              width: "4px",
-              height: "6px",
-              backgroundColor: "var(--gold)",
-              borderRadius: "2px",
-              position: "absolute",
-              top: "6px",
-              left: "50%",
-              marginLeft: "-2px",
+              fontFamily: "var(--font-serif)",
+              fontSize: "1rem",
+              letterSpacing: "0.4em",
+              color: "var(--gold)",
+              textTransform: "uppercase",
+              marginBottom: "20px",
             }}
-          />
-        </div>
-        <span
-          style={{
-            fontFamily: "var(--font-sans)",
-            fontSize: "0.6rem",
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            color: "rgba(255, 255, 255, 0.5)",
-          }}
-        >
-          Scroll
-        </span>
-      </motion.div>
-
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .hidden-mobile {
-            display: none !important;
-          }
-        }
-      `}</style>
+          >
+            A New Era of Luxury
+          </h2>
+          <h1
+            style={{
+              fontFamily: "var(--font-serif)",
+              fontSize: "clamp(3rem, 8vw, 7rem)",
+              fontWeight: 300,
+              color: "var(--white)",
+              letterSpacing: "0.05em",
+              lineHeight: 1.1,
+              textShadow: "0px 10px 30px rgba(0,0,0,0.8)",
+            }}
+          >
+            DROPPING SOON
+          </h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 1.5 }}
+            style={{
+              fontFamily: "var(--font-serif)",
+              color: "var(--gold)",
+              marginTop: "24px",
+              fontSize: "0.85rem",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              fontWeight: 400,
+            }}
+          >
+            The intersection of timeless craftsmanship and modern aesthetics.
+          </motion.p>
+        </motion.div>
+      </div>
     </section>
   );
 }
+
