@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 function Particles() {
   const ref = useRef();
-  const count = 15000;
+  const count = 1000;
 
   const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -94,7 +94,7 @@ function WavyPlane() {
 
   return (
     <mesh ref={meshRef} rotation={[-Math.PI / 2.2, 0, 0]} position={[0, -1.5, -2]}>
-      <planeGeometry args={[15, 15, 64, 64]} />
+      <planeGeometry args={[15, 15, 16, 16]} />
       <meshStandardMaterial
         color="#d4af37"
         wireframe={true}
@@ -216,9 +216,34 @@ export default function Hero() {
           >
             The intersection of timeless craftsmanship and modern aesthetics.
           </motion.p>
+          {/*
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2, duration: 1 }}
+            whileHover={{ scale: 1.05, backgroundColor: "rgba(212, 175, 55, 0.1)", borderColor: "rgba(212, 175, 55, 1)" }}
+            whileTap={{ scale: 0.95 }}
+            style={{
+              marginTop: "50px",
+              padding: "16px 48px",
+              backgroundColor: "transparent",
+              color: "var(--gold)",
+              fontFamily: "var(--font-sans)",
+              fontSize: "0.85rem",
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+              border: "1px solid rgba(212, 175, 55, 0.4)",
+              cursor: "pointer",
+              transition: "var(--transition-smooth)",
+              pointerEvents: "auto",
+            }}
+            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          >
+            SECURE EARLY ACCESS
+          </motion.button>
+          */}
         </motion.div>
       </div>
     </section>
   );
 }
-

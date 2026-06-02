@@ -14,10 +14,13 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "HUELUXE | Luxury Men's Premium Fit Shirts",
+  title: "HUELUXE | The Man Thing",
   description: "Explore HUELUXE Solid Premium Fit Shirts. Crafted for the modern gentleman who values elegance, comfort, and timeless style. Tailored with extra-long-staple cotton and Italian design principles.",
   keywords: "luxury clothing, premium fit shirts, men's fashion, tailored shirts, hueluxe, organic cotton, designer wear",
   authors: [{ name: "HUELUXE Atelier" }],
+  icons: {
+    icon: '/logonew.png',
+  },
 };
 
 export default function RootLayout({ children }) {
